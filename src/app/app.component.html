@@ -1,0 +1,42 @@
+<!--The content below is only a placeholder and can be replaced.-->
+<div class="outer-wrapper">
+  <div class="map-wrapper" #wrapper>
+    <agm-map
+      [latitude]="lat"
+      [longitude]="lng"
+      [zoom]="zoom"
+      [disableDefaultUI]="false"
+      [zoomControl]="false"
+      [mapTypeId]="'satellite'"
+      (mapClick)="mapClicked($event)"
+      #AgmMap>
+      <agm-marker
+        *ngFor="let m of markers; let i = index"
+        (markerClick)="markerClicked(m.label, i)"
+        [latitude]="m.lat"
+        [longitude]="m.lng"
+        [markerDraggable]="m.draggable"
+        (drag)="markerDrag(m, $event)"
+        (dragEnd)="markerDragEnd(m, $event)"
+        [iconUrl]="'assets/dump_truck.png'">
+        <agm-info-window>
+          <div>{{m.id}} &mdash; {{m.label}}</div>
+          <img [src]="m.image" height="100"/>
+        </agm-info-window>
+
+      </agm-marker>
+    </agm-map>
+  </div>
+  <div class="buttons-wrapper">
+    <button
+      (click)="startStopClicked()"
+      [disabled]="isRecording"
+    >Start Recording</button>
+    <button
+      (click)="saveClicked()"
+      >Save Data ({{points.length}} points)</button>
+    <button
+      (click)="resetClicked()"
+    >Reset</button>
+  </div>
+</div>
