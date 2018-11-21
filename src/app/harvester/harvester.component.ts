@@ -72,11 +72,7 @@ export class HarvesterComponent implements OnInit {
 
     if (this.isRecording) {
       this.startTime = Date.now();
-      this.points = [{
-        lat: this.markers[0].lat,
-        lng: this.markers[0].lng,
-        time: this.startTime,
-      }];
+      this.points = [];
     }
   }
 

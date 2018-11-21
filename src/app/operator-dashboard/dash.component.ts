@@ -39,7 +39,10 @@ export class DashComponent implements OnInit {
       this.hash = Math.round(Math.random() * 1e5);
       const data = JSON.parse(e.data);
       data.forEach(d => {
-        if (d.type === 'car breakdown' || d.type === 'driver blood pressure is not normal' || d.type === 'driver got tired' || d.type === 'unit violates zone restrictions') {
+        if (d.type === 'car breakdown'
+          || d.type === 'driver blood pressure is not normal'
+          || d.type === 'driver got tired'
+          || d.type === 'unit violates zone restrictions') {
           // this.errors[d.id] = d;
 
           if (d.level === 'ERROR' || d.driverStatus === 'CRITICAL') {
@@ -85,7 +88,7 @@ export class DashComponent implements OnInit {
           return;
         }
 
-        if (d.type === 'car') {
+        if (d.type === 'car' || d.type === 'excavator' || d.type === 'pedestrian') {
           const marker = this.markerHash[d.id];
           const _marker = marker && this.markers[marker.index];
 
@@ -163,6 +166,7 @@ interface Marker {
   lat: number;
   lng: number;
   label?: string;
+  type: string;
   image: string;
   draggable: boolean;
   affects: any[];
