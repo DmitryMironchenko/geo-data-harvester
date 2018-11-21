@@ -1,7 +1,7 @@
 import { TestBed, async } from '@angular/core/testing';
-import { AppComponent } from './app.component';
+import { AppComponent } from './harvester.component';
 
-describe('AppComponent', () => {
+describe('HarvesterComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [

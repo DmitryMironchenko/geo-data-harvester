@@ -1,0 +1,28 @@
+.outer-wrapper {
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.map-wrapper {
+  height: 400px;
+}
+
+agm-map {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.buttons-wrapper {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+}
+
+.car {
+  transition: transform;
+  transition-timing-function: cubic-bezier(.51,.61,.66,.55);
+}

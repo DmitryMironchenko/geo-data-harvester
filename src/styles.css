@@ -2,3 +2,47 @@
 body {
   margin: 0;
 }
+
+.si-frame.si-content-wrapper {
+  padding-top: 20px;
+}
+
+.params-wrapper {
+  padding-top: 10px;
+  margin-top: 20px;
+  border-top: 1px solid #ccc;
+}
+
+.param-label {
+  float: left;
+  font-weight: bold;
+  width: 100px;
+  text-align: right;
+  padding-right: 10px;
+}
+
+.clearfix {
+  overflow: auto;
+}
+
+.clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.WARNING {
+  color: darkorange;
+}
+
+.CRITICAL {
+  color: red;
+}
+
+.NORMAL {
+  color: #a1a6a6;
+}
+
+.TIRED {
+  color: rgba(191, 129, 0, 0.73);
+}
