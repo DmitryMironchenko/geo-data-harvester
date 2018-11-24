@@ -16,7 +16,7 @@ body {
 .param-label {
   float: left;
   font-weight: bold;
-  width: 100px;
+  width: 120px;
   text-align: right;
   padding-right: 10px;
 }
@@ -31,11 +31,13 @@ body {
   display: table;
 }
 
-.WARNING {
+.WARNING,
+.OVERLOADED {
   color: darkorange;
 }
 
-.CRITICAL {
+.CRITICAL,
+.DOWN {
   color: red;
 }
 
@@ -45,4 +47,17 @@ body {
 
 .TIRED {
   color: rgba(191, 129, 0, 0.73);
+}
+
+div[style*="background-image: url(\"assets/smallCellCluster1.png\");"],
+div[style*="background-image: url(\"assets/smallCellCluster2.png\");"],
+div[style*="background-image: url(\"assets/smallCellCluster3.png\");"] {
+  background-repeat: no-repeat;
+  color: #00000000 !important;
+  font-size: 24px !important;
+  font-weight: normal !important;
+}
+
+.si-content {
+  display: table;
 }

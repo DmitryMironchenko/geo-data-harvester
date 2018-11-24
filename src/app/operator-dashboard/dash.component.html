@@ -7,7 +7,7 @@
       [zoom]="zoom"
       [disableDefaultUI]="false"
       [zoomControl]="false"
-      [mapTypeId]="'satellite'"
+      [mapTypeId]="'roadmap'"
       #AgmMap>
       <agm-polygon
         *ngIf="dangerZone"
@@ -21,15 +21,86 @@
         <h4>{{dangerZone.title}}</h4>
         <p>{{dangerZone.description}}</p>
       </agm-info-window>
+      <agm-circle
+        *ngFor="let m of cellTowers; let i = index"
+        [latitude]="m.lat"
+        [longitude]="m.lng"
+        [radius]="m.radius"
+        [strokeColor]="m.status === 'OVERLOADED' ? '#c89200' : '#0087d6'"
+        [strokePosition]="1"
+        [strokeWeight]="1"
+        [fillColor]="m.status === 'OVERLOADED' ? '#c89200' : '#0079c0'"
+        ></agm-circle>
+      <agm-circle
+        *ngFor="let m of smallCellTowers; let i = index"
+        [latitude]="m.lat"
+        [longitude]="m.lng"
+        [radius]="m.radius"
+        [strokeColor]="m.status === 'OVERLOADED' ? '#c89200' : '#0087d6'"
+        [strokePosition]="1"
+        [strokeWeight]="1"
+        [fillColor]="m.status === 'OVERLOADED' ? '#c89200' : '#0079c0'"
+      ></agm-circle>
+      <agm-marker-cluster
+        [imagePath]="'assets/smallCellCluster'"
+        [gridSize]="20"
+        [maxZoom]="19"
+        animation="BOUNCE"
+      >
+        <agm-marker
+          *ngFor="let m of smallCellTowers let i = index"
+          [latitude]="m.lat"
+          [longitude]="m.lng"
+          [markerDraggable]="m.draggable"
+          [iconUrl]="m.status === 'DOWN' ? 'assets/' + m.type + '_problem.png' : m.status === 'OVERLOADED' ? 'assets/' + m.type + '_warning.png' : 'assets/' + m.type + '.png'"
+          [animation]="m.status === 'DOWN' ? 'BOUNCE' : null"
+          [zIndex]="m.affects.length ? 2 : 1">
+          <agm-snazzy-info-window
+            [maxWidth]="400"
+            [maxHeight]="500"
+            [closeWhenOthersOpen]="true"
+            [shadow]="true"
+            [isOpen]="isInfoWindowOpened(m)"
+            (afterClose)="this.forceOpenedMarkerId === m.id ? this.forceOpenedMarkerId = null : null"
+          >
+            <ng-template>
+              <div style="width: 400px;">
+                <h2 style="margin-top:0;"><span class="{{m.status}}">[{{m.status || 'UP'}}] </span>BTS #{{m.id}} | {{m.title}}</h2>
+                <div class="clearfix">
+                  <div style="float:left;">
+                    <img [src]="m.image" height="150" />
+                  </div>
+                  <div class="params-wrapper" style="border: none;padding-top:0;margin-top: 10px;margin-left: 170px;">
+                    <div class="param-label">Height:</div><div [ngClass]="m.driverStatus">{{m.height}}</div>
+                    <div class="param-label">Tower Type:</div><div [ngClass]="m.driverStatus">{{m.tower_type}}</div>
+                    <div class="param-label">GPS receiver:</div><div [ngClass]="m.driverStatus">{{m["GPS receiver"]}}</div>
+                    <div class="param-label">Range:</div><div [ngClass]="m.driverStatus">{{m.range}}</div>
+                    <div class="param-label">Frequency:</div><div [ngClass]="m.driverStatus">{{m["signal frequency"]}}</div>
+                    <div class="param-label">Transmitters:</div><div [ngClass]="m.driverStatus">{{m.transmitters}}</div>
+                    <div class="param-label">Emergency PS:</div><div [ngClass]="m.driverStatus">{{m["emergency power system"]}}</div>
+                  </div>
+                  <div *ngIf="m.affects.length" class="params-wrapper">
+                    <h2 style="color: #f00; margin-top:10px;margin-bottom:10px">Alerts:</h2>
+                    <ul>
+                      <li *ngFor="let affect of m.affects">{{affect.description}}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
+          </agm-snazzy-info-window>
+        </agm-marker>
+      </agm-marker-cluster>
+
       <agm-marker
-        *ngFor="let m of markers; let i = index"
+        *ngFor="let m of cellTowers; let i = index"
         [latitude]="m.lat"
         [longitude]="m.lng"
         [markerDraggable]="m.draggable"
-        [iconUrl]="m.driverStatus === 'TIRED' ? 'assets/' + m.type + '_tired.png' : m.affects.length ? 'assets/' + m.type + '_problem.png' : 'assets/' + m.type + '.png'"
+        [iconUrl]="m.status === 'DOWN' ? 'assets/' + m.type + '_problem.png' : m.status === 'OVERLOADED' ? 'assets/' + m.type + '_warning.png' : 'assets/' + m.type + '.png'"
+        [animation]="m.status === 'DOWN' ? 'BOUNCE' : null"
         [zIndex]="m.affects.length ? 2 : 1">
         <agm-snazzy-info-window
-          *ngIf="m.type === 'car' || m.type === 'excavator'"
           [maxWidth]="400"
           [maxHeight]="500"
           [closeWhenOthersOpen]="true"
@@ -39,61 +110,20 @@
         >
           <ng-template>
             <div style="width: 400px;">
-              <h2 style="margin-top:0;">Shift # 1 | Engine #{{m.id}}</h2>
-              <div style="float:left;width: 170px;">
-                <img [src]="m.image" height="150"/>
-                <div style="font-size: 16px;">{{m.label}}</div>
-              </div>
-              <div>
-                <img [src]="m.driver.photo" height="150" />
-                <div style="font-size: 16px;">{{m.driver.fullName}}</div>
-              </div>
+              <h2 style="margin-top:0;"><span [ngClass]="m.status">[{{m.status || 'UP'}}] </span>BTS #{{m.id}} | {{m.title}}</h2>
               <div class="clearfix">
-                <div class="params-wrapper" style="float:left;width:160px;height:60px;">
-                  <div class="param-label">STATUS:</div><div [ngClass]="m.carStatus">{{m.carStatus}}</div>
-                  <div class="param-label">Fuel:</div><div>{{100 * m.fuelAmount / m.fuelTankCapacity | number: '0.0-0' }}%</div>
-                  <div class="param-label">Coolant temp:</div><div>{{m.coolantTemp}} °F</div>
-                  <div class="param-label">Power Output:</div><div>{{m.powerOutput}} KW</div>
+                <div style="float:left;">
+                  <img [src]="m.image" height="150" />
                 </div>
-                <div class="params-wrapper">
-                  <div class="param-label">STATUS:</div><div [ngClass]="m.driverStatus">{{m.driverStatus}}</div>
-                  <div class="param-label">Temp:</div><div>{{m.driverTemperature}} °C</div>
-                  <div class="param-label">Heart Rate</div><div>{{m.driverHeartRate}} ♥</div>
-                  <div class="param-label">BP:</div><div>{{m.driverBloodPressure1}}/{{m.driverBloodPressure2}}</div>
-                  <div class="param-label">Shift:</div><div>{{Math.floor(m.driverShiftLength/(1000 * 60 * 60))}}:{{Math.floor(m.driverShiftLength%(1000 * 60 * 60) / 60e3) | number: '2.0-0'}}</div>
+                <div class="params-wrapper" style="border: none;padding-top:0;margin-top: 10px;margin-left: 170px;">
+                  <div class="param-label">Height:</div><div [ngClass]="m.driverStatus">{{m.height}}</div>
+                  <div class="param-label">Tower Type:</div><div [ngClass]="m.driverStatus">{{m.tower_type}}</div>
+                  <div class="param-label">GPS receiver:</div><div [ngClass]="m.driverStatus">{{m["GPS receiver"]}}</div>
+                  <div class="param-label">Range:</div><div [ngClass]="m.driverStatus">{{m.range}}</div>
+                  <div class="param-label">Frequency:</div><div [ngClass]="m.driverStatus">{{m["signal frequency"]}}</div>
+                  <div class="param-label">Transmitters:</div><div [ngClass]="m.driverStatus">{{m.transmitters}}</div>
+                  <div class="param-label">Emergency PS:</div><div [ngClass]="m.driverStatus">{{m["emergency power system"]}}</div>
                 </div>
-                </div>
-              <div *ngIf="m.affects.length" class="params-wrapper">
-                <h2 style="color: #f00; margin-top:10px;margin-bottom:10px">Alerts:</h2>
-                <ul>
-                  <li *ngFor="let affect of m.affects">{{affect.description}}</li>
-                </ul>
-              </div>
-            </div>
-          </ng-template>
-        </agm-snazzy-info-window>
-        <agm-snazzy-info-window
-          *ngIf="m.type === 'pedestrian'"
-          [maxWidth]="400"
-          [maxHeight]="500"
-          [closeWhenOthersOpen]="true"
-          [shadow]="true"
-          [isOpen]="isInfoWindowOpened(m)"
-          (afterClose)="this.forceOpenedMarkerId === m.id ? this.forceOpenedMarkerId = null : null"
-        >
-          <ng-template>
-            <div style="width: 400px;">
-              <h2 style="margin-top:0;">Shift # 1 | Worker #{{m.id}}</h2>
-              <div style="float:left;">
-                <img [src]="m.driver.photo" height="150" />
-              </div>
-              <div class="params-wrapper" style="border: none;padding-top:0;">
-                <div style="font-size: 16px;padding-bottom:20px;margin-left: 170px;">{{m.driver.fullName}}</div>
-                <div class="param-label">STATUS:</div><div [ngClass]="m.driverStatus">{{m.driverStatus}}</div>
-                <div class="param-label">Temp:</div><div>{{m.driverTemperature}} °C</div>
-                <div class="param-label">Heart Rate</div><div>{{m.driverHeartRate}} ♥</div>
-                <div class="param-label">BP:</div><div>{{m.driverBloodPressure1}}/{{m.driverBloodPressure2}}</div>
-                <div class="param-label">Shift:</div><div>{{Math.floor(m.driverShiftLength/(1000 * 60 * 60))}}:{{Math.floor(m.driverShiftLength%(1000 * 60 * 60) / 60e3) | number: '2.0-0'}}</div>
               </div>
               <div *ngIf="m.affects.length" class="params-wrapper">
                 <h2 style="color: #f00; margin-top:10px;margin-bottom:10px">Alerts:</h2>

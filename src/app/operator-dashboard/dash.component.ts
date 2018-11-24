@@ -8,11 +8,11 @@ import { ToastrService } from 'ngx-toastr';
 })
 
 export class DashComponent implements OnInit {
-  title = 'Fortescue Metals Group Iron Ore Mine';
-  lat = -22.3269188;
-  lng = 119.4059056;
+  title = 'LA Cell Towers';
+  lat = 33.7964477;
+  lng = -118.0028257;
   height = 643;
-  zoom = 15;
+  zoom = 11;
   hash = null;
   Math = Math;
 
@@ -22,8 +22,12 @@ export class DashComponent implements OnInit {
     image: 'assets/car1.jpeg',
   };*/
   dangerZone = null;
-  markers: Marker[] = [];
-  markerHash = {};
+  cellTowers: Marker[] = [];
+  smallCellTowers: Marker[] = [];
+  zones: any[] = [];
+  cellTowerHash = {};
+  smallCellTowerHash = {};
+
   toastHash = {};
   forceOpenedMarkerId = null;
   polygonInfoShown = false;
@@ -34,92 +38,96 @@ export class DashComponent implements OnInit {
   ngOnInit() {
     this.onResize();
 
-    const source = new EventSource('http://10.0.0.134:3001/events/');
+    const source = new EventSource('http://localhost:3001/events/');
     source.onmessage = (e) => {
       this.hash = Math.round(Math.random() * 1e5);
       const data = JSON.parse(e.data);
       data.forEach(d => {
-        if (d.type === 'car breakdown'
-          || d.type === 'driver blood pressure is not normal'
-          || d.type === 'driver got tired'
-          || d.type === 'unit violates zone restrictions') {
-          // this.errors[d.id] = d;
+        if (d.type === 'cell tower power cut' || d.type === 'cell tower overload') {
+          // this.errors[d.towerId] = d;
 
-          if (d.level === 'ERROR' || d.driverStatus === 'CRITICAL') {
+          if (d.level === 'ERROR') {
             const toast = this.toastr
-              .error(`(#${d.carId}): ${d.description}`, d.title, {
+              .error(`(#${d.towerId}): ${d.description}`, d.title, {
                 // progressBar: true,
                 timeOut: 2e3,
                 closeButton: true,
                 tapToDismiss: false,
               });
-            /*toast.onHidden.subscribe(() => {
-              delete this.toastHash[d.id];
-            });*/
+            toast.onHidden.subscribe(() => {
+              delete this.toastHash[d.towerId];
+            });
 
-            if (!this.toastHash[d.id]) {
+            if (!this.toastHash[d.towerId]) {
               const subscription = toast.onTap.subscribe((foo: any) => {
-                // console.log('[Info] toast tapped', d);
-                this.forceOpenedMarkerId = d.carId;
+                this.forceOpenedMarkerId = d.towerId;
               });
-              this.toastHash[d.id] = subscription;
+              this.toastHash[d.towerId] = subscription;
             }
-          } else if (d.level === 'WARNING') {
+          }
+
+          if (d.level === 'WARNING') {
             const toast = this.toastr
-              .warning(`(#${d.carId}): ${d.description}`, d.title, {
+              .warning(`(#${d.towerId}): ${d.description}`, d.title, {
                 // progressBar: true,
                 timeOut: 2e3,
                 closeButton: true,
                 tapToDismiss: false,
               });
+            toast.onHidden.subscribe(() => {
+              delete this.toastHash[d.towerId];
+            });
 
-            /*toast.onHidden.subscribe(() => {
-              delete this.toastHash[d.id];
-            });*/
-
-            if (!this.toastHash[d.id]) {
+            if (!this.toastHash[d.towerId]) {
               const subscription = toast.onTap.subscribe((foo: any) => {
-                // console.log('[Info] toast tapped', d);
-                this.forceOpenedMarkerId = d.carId;
+                this.forceOpenedMarkerId = d.towerId;
               });
-              this.toastHash[d.id] = subscription;
+              this.toastHash[d.towerId] = subscription;
             }
+          }
+
+          return;
+        }
+
+        if (d.type === 'cellTower') {
+          const marker = this.cellTowerHash[d.id];
+          const _marker = marker && this.cellTowers[marker.index];
+
+          if (marker) {
+            // console.log('[INFO] Marker position upd', marker);
+            Object.assign(marker, d);
+            Object.assign(_marker, d);
+          } else {
+            const length = this.cellTowers.push({
+              ...d,
+              affects: d.affects || [],
+            });
+            this.cellTowerHash[d.id] = {...d, index: length - 1};
           }
           return;
         }
 
-        if (d.type === 'car' || d.type === 'excavator' || d.type === 'pedestrian') {
-          const marker = this.markerHash[d.id];
-          const _marker = marker && this.markers[marker.index];
+        if (d.type === 'poleCell') {
+          const marker = this.smallCellTowerHash[d.id];
+          const _marker = marker && this.smallCellTowers[marker.index];
 
           if (marker) {
             // console.log('[INFO] Marker position upd', marker);
-            marker.lat = _marker.lat = d.lat;
-            marker.lng = _marker.lng = d.lng;
-            marker.fuelAmount = _marker.fuelAmount = d.fuelAmount;
-            marker.coolantTemp = _marker.coolantTemp = d.coolantTemp;
-            marker.powerOutput = _marker.powerOutput = d.powerOutput;
-            marker.affects = _marker.affects = d.affects || [];
-            marker.driverTemperature = _marker.driverTemperature = d.driverTemperature;
-            marker.driverHeartRate = _marker.driverHeartRate = d.driverHeartRate;
-            marker.driverBloodPressure1 = _marker.driverBloodPressure1 = d.driverBloodPressure1;
-            marker.driverBloodPressure2 = _marker.driverBloodPressure2 = d.driverBloodPressure2;
-            marker.driverShiftLength = _marker.driverShiftLength = d.driverShiftLength;
-            marker.driverStatus = _marker.driverStatus = d.driverStatus;
-            marker.carStatus = _marker.carStatus = d.carStatus;
+            Object.assign(marker, d);
+            Object.assign(_marker, d);
           } else {
-            const length = this.markers.push({
-              // ...this.defaultCar,
+            const length = this.smallCellTowers.push({
               ...d,
-              npcId: d.id,
               affects: d.affects || [],
             });
-            this.markerHash[d.id] = {...d, index: length - 1};
+            this.smallCellTowerHash[d.id] = {...d, index: length - 1};
           }
+          return;
         }
 
         if (d.type === 'Danger Zone' && !this.dangerZone) {
           this.dangerZone = d;
+          return;
         }
       });
 
@@ -139,7 +147,7 @@ export class DashComponent implements OnInit {
   }
 
   isInfoWindowOpened(m) {
-    return this.forceOpenedMarkerId === m.npcId;
+    return this.forceOpenedMarkerId === m.id;
   }
 
   onResize() {
@@ -165,6 +173,7 @@ interface Marker {
   id: string;
   lat: number;
   lng: number;
+  radius: number;
   label?: string;
   type: string;
   image: string;
@@ -186,6 +195,7 @@ interface Marker {
   driverBloodPressure1: number;
   driverBloodPressure2: number;
   driverShiftLength: number;
+  status: string;
 }
 
 interface Coordinate {

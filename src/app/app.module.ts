@@ -6,11 +6,12 @@ import { CommonModule } from '@angular/common';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
 import { AgmSnazzyInfoWindowModule } from '@agm/snazzy-info-window';
+import { AgmCoreModule } from '@agm/core';
+import { AgmJsMarkerClustererModule } from '@agm/js-marker-clusterer';
 
 import { AppComponent } from './app.component';
 import { HarvesterComponent } from './harvester/harvester.component';
 import { DashComponent } from './operator-dashboard/dash.component';
-import { AgmCoreModule } from '@agm/core';
 
 const appRoutes: Routes = [
   { path: 'harvester',  component: HarvesterComponent },
@@ -52,6 +53,7 @@ const appRoutes: Routes = [
       resetTimeoutOnDuplicate: true,
     }),
     AgmSnazzyInfoWindowModule,
+    AgmJsMarkerClustererModule,
   ],
   providers: [],
   bootstrap: [ AppComponent ],
