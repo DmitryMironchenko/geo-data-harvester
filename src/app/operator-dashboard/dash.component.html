@@ -15,9 +15,10 @@
         [strokeColor]="'#ff8c00'"
         [strokeWeight]="3"
         [fillColor]="'#ff8c00ee'"
-        (polyClick)="polyClicked()"
-      ></agm-polygon>
-      <agm-info-window *ngIf="dangerZone" [isOpen]="polygonInfoShown" [latitude]="-22.335981" [longitude]="119.388793">
+        (polyClick)="polyClicked()">
+      </agm-polygon>
+
+      <agm-info-window *ngIf="dangerZone" [isOpen]="polygonInfoShown" [latitude]="50.161785" [longitude]="-120.136131">
         <h4>{{dangerZone.title}}</h4>
         <p>{{dangerZone.description}}</p>
       </agm-info-window>
@@ -25,75 +26,66 @@
         *ngFor="let m of markers; let i = index"
         [latitude]="m.lat"
         [longitude]="m.lng"
-        [markerDraggable]="m.draggable"
-        [iconUrl]="m.driverStatus === 'TIRED' ? 'assets/' + m.type + '_tired.png' : m.affects.length ? 'assets/' + m.type + '_problem.png' : 'assets/' + m.type + '.png'"
-        [zIndex]="m.affects.length ? 2 : 1">
-        <agm-snazzy-info-window
-          *ngIf="m.type === 'car' || m.type === 'excavator'"
+        [markerDraggable]="false"
+        [iconUrl]="m.statusLevel === 2 ? 'assets/' + m.type + '_warning.png' :
+          m.statusLevel === 3 ? 'assets/' + m.type + '_problem.png' :
+          'assets/' + m.type + '.png'"
+        [zIndex]="m.statusLevel > 1 ? 2 : 1">
+
+          <!--  Cows  -->
+          <agm-snazzy-info-window
+          *ngIf="m.type === 'cow'"
           [maxWidth]="400"
           [maxHeight]="500"
           [closeWhenOthersOpen]="true"
           [shadow]="true"
           [isOpen]="isInfoWindowOpened(m)"
           (afterClose)="this.forceOpenedMarkerId === m.id ? this.forceOpenedMarkerId = null : null"
-        >
-          <ng-template>
-            <div style="width: 400px;">
-              <h2 style="margin-top:0;">Shift # 1 | Engine #{{m.id}}</h2>
-              <div style="float:left;width: 170px;">
-                <img [src]="m.image" height="150"/>
-                <div style="font-size: 16px;">{{m.label}}</div>
+        >  <ng-template>
+          <div style="width: 230px;">
+            <h2 style="margin-top:0;">Cow #{{m.id}}</h2>
+            <div>
+              <img [src]="m.photo" height="150" />
+              <div style="font-size: 16px;">{{m.fullName}}</div>
+            </div>
+            <div class="clearfix">
+              <div class="params-wrapper" style="float:left;width:220px;height:80px;">
+                <div class="param-label">STATUS:</div><div>{{m.status || 'Updating'}}</div>
+                <div class="param-label">Temp:</div><div>{{m.temperature || '-'}} °C</div>
+                <div class="param-label">Heart Rate</div><div>{{m.heartRate || '-'}} ♥</div>
+                <div class="param-label">BP:</div><div>{{m.systolicBloodPressure || '-'}}/{{m.diastolicBloodPressure || '-'}}</div>
               </div>
+            </div>
+            <div *ngIf="m.affects.length" class="params-wrapper">
+              <h2 style="color: #f00; margin-top:10px;margin-bottom:10px">Alerts:</h2>
+              <ul>
+                <li *ngFor="let affect of m.affects">{{affect.description}}</li>
+              </ul>
+            </div>
+          </div>
+        </ng-template>
+        </agm-snazzy-info-window>
+
+          <!--  Watter point  -->
+          <agm-snazzy-info-window
+            *ngIf="m.type === 'waterpoint'"
+            [maxWidth]="400"
+            [maxHeight]="500"
+            [closeWhenOthersOpen]="true"
+            [shadow]="true"
+            [isOpen]="isInfoWindowOpened(m)"
+            (afterClose)="this.forceOpenedMarkerId === m.id ? this.forceOpenedMarkerId = null : null"
+          >  <ng-template>
+            <div style="width: 200px;">
+              <h2 style="margin-top:0;">Water Point #{{m.id}}</h2>
               <div>
-                <img [src]="m.driver.photo" height="150" />
-                <div style="font-size: 16px;">{{m.driver.fullName}}</div>
+                <img [src]="m.waterPoint.photo" height="150" />
+                <div style="font-size: 16px;">{{m.waterPoint.fullName}}</div>
               </div>
               <div class="clearfix">
-                <div class="params-wrapper" style="float:left;width:160px;height:60px;">
-                  <div class="param-label">STATUS:</div><div [ngClass]="m.carStatus">{{m.carStatus}}</div>
-                  <div class="param-label">Fuel:</div><div>{{100 * m.fuelAmount / m.fuelTankCapacity | number: '0.0-0' }}%</div>
-                  <div class="param-label">Coolant temp:</div><div>{{m.coolantTemp}} °F</div>
-                  <div class="param-label">Power Output:</div><div>{{m.powerOutput}} KW</div>
+                <div class="params-wrapper" style="float:left;width:200px;height:40px;">
+                  <div class="param-label">STATUS:</div><div [ngClass]="m.status">{{m.status}}</div>
                 </div>
-                <div class="params-wrapper">
-                  <div class="param-label">STATUS:</div><div [ngClass]="m.driverStatus">{{m.driverStatus}}</div>
-                  <div class="param-label">Temp:</div><div>{{m.driverTemperature}} °C</div>
-                  <div class="param-label">Heart Rate</div><div>{{m.driverHeartRate}} ♥</div>
-                  <div class="param-label">BP:</div><div>{{m.driverBloodPressure1}}/{{m.driverBloodPressure2}}</div>
-                  <div class="param-label">Shift:</div><div>{{Math.floor(m.driverShiftLength/(1000 * 60 * 60))}}:{{Math.floor(m.driverShiftLength%(1000 * 60 * 60) / 60e3) | number: '2.0-0'}}</div>
-                </div>
-                </div>
-              <div *ngIf="m.affects.length" class="params-wrapper">
-                <h2 style="color: #f00; margin-top:10px;margin-bottom:10px">Alerts:</h2>
-                <ul>
-                  <li *ngFor="let affect of m.affects">{{affect.description}}</li>
-                </ul>
-              </div>
-            </div>
-          </ng-template>
-        </agm-snazzy-info-window>
-        <agm-snazzy-info-window
-          *ngIf="m.type === 'pedestrian'"
-          [maxWidth]="400"
-          [maxHeight]="500"
-          [closeWhenOthersOpen]="true"
-          [shadow]="true"
-          [isOpen]="isInfoWindowOpened(m)"
-          (afterClose)="this.forceOpenedMarkerId === m.id ? this.forceOpenedMarkerId = null : null"
-        >
-          <ng-template>
-            <div style="width: 400px;">
-              <h2 style="margin-top:0;">Shift # 1 | Worker #{{m.id}}</h2>
-              <div style="float:left;">
-                <img [src]="m.driver.photo" height="150" />
-              </div>
-              <div class="params-wrapper" style="border: none;padding-top:0;">
-                <div style="font-size: 16px;padding-bottom:20px;margin-left: 170px;">{{m.driver.fullName}}</div>
-                <div class="param-label">STATUS:</div><div [ngClass]="m.driverStatus">{{m.driverStatus}}</div>
-                <div class="param-label">Temp:</div><div>{{m.driverTemperature}} °C</div>
-                <div class="param-label">Heart Rate</div><div>{{m.driverHeartRate}} ♥</div>
-                <div class="param-label">BP:</div><div>{{m.driverBloodPressure1}}/{{m.driverBloodPressure2}}</div>
-                <div class="param-label">Shift:</div><div>{{Math.floor(m.driverShiftLength/(1000 * 60 * 60))}}:{{Math.floor(m.driverShiftLength%(1000 * 60 * 60) / 60e3) | number: '2.0-0'}}</div>
               </div>
               <div *ngIf="m.affects.length" class="params-wrapper">
                 <h2 style="color: #f00; margin-top:10px;margin-bottom:10px">Alerts:</h2>
@@ -103,7 +95,7 @@
               </div>
             </div>
           </ng-template>
-        </agm-snazzy-info-window>
+          </agm-snazzy-info-window>
       </agm-marker>
     </agm-map>
   </div>
