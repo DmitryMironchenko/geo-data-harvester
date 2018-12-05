@@ -34,7 +34,7 @@ export class DashComponent implements OnInit {
   ngOnInit() {
     this.onResize();
 
-    const source = new EventSource('http://localhost:3001/events/');
+    const source = new EventSource('https://nd1.ccdevlabs.net/events/');
     source.onmessage = (e) => {
       this.hash = Math.round(Math.random() * 1e5);
       const data = JSON.parse(e.data);
