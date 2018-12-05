@@ -38,14 +38,13 @@ export class DashComponent implements OnInit {
   ngOnInit() {
     this.onResize();
 
-    const source = new EventSource('http://localhost:3001/events/');
+    const source = new EventSource('https://nd2.ccdevlabs.net/events/');
     source.onmessage = (e) => {
       this.hash = Math.round(Math.random() * 1e5);
       const data = JSON.parse(e.data);
       data.forEach(d => {
         if (d.type === 'cell tower power cut' || d.type === 'cell tower overload') {
           // this.errors[d.towerId] = d;
-
           if (d.level === 'ERROR') {
             const toast = this.toastr
               .error(`(#${d.towerId}): ${d.description}`, d.title, {
